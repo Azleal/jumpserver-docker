@@ -1,0 +1,117 @@
+version: "3.7"
+services:
+  mysql:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=eptki3ZNwXuYwDmW6BRV
+      - MYSQL_DATABASE=jumpserver
+      - MYSQL_USER=jumpserver
+      - MYSQL_PASSWORD=3YNZW4NixETC8pnxTLVh
+    volumes:
+      - "mysql_data_volume:/var/lib/mysql"
+      - "./mysql/initdb.d:/docker-entrypoint-initdb.d"
+    networks:
+      jumpserver-network:
+        aliases:
+          - jumpserver-mysql
+#    deploy:
+#      placement:
+#        constraints:
+#          - node.labels.role==mysql
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: 7bngtJOVsmujANnK_@S
+    volumes:
+      - ./redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
+      - type: volume
+        source: redis_data_volume
+        target: /data
+    networks:
+      jumpserver-network:
+        aliases:
+          - jumpserver-redis
+    entrypoint: 
+      - redis-server
+      - /usr/local/etc/redis/redis.conf
+      - --appendonly
+      - "yes"
+#    deploy:
+#      placement:
+#        constraints:
+#          - node.labels.role==redis
+
+
+  jumpserver-app:
+    build:
+      context: ./jumpserver-app
+    image: azleal/jumpserver-app
+    environment:
+      MYSQL_PASSWORD: 3YNZW4NixETC8pnxTLVh
+      REDIS_PASSWORD: 7bngtJOVsmujANnK_@S
+
+    volumes:
+      - jumpserver_logs_volume:/opt/jumpserver/logs
+      - jumpserver_data_volume:/opt/jumpserver/data
+    networks:
+      jumpserver-network:
+    depends_on:
+      - redis
+      - mysql
+
+
+  coco:
+    build:
+      context: jumpserver-coco
+    image: azleal/jumpserver-coco
+    networks:
+      jumpserver-network:
+    environment:
+      - CORE_HOST=http://jumpserver-app:8080
+      - BOOTSTRAP_TOKEN=qzy4mzoY65spWXezG7A
+    depends_on:
+      - jumpserver-app
+
+  # 8081
+  guacamole:
+    image: jumpserver/jms_guacamole:1.4.10
+    networks:
+      jumpserver-network:
+    environment:
+      - JUMPSERVER_KEY_DIR=/config/guacamole/key
+      - JUMPSERVER_SERVER=http://jumpserver-app
+      - BOOTSTRAP_TOKEN=qzy4mzoY65spWXezG7A
+    depends_on:
+      - jumpserver-app
+
+  openresty:
+    build:
+      context: ./openresty
+    image: azleal/openresty
+    networks:
+      jumpserver-network:
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - jumpserver_data_volume:/opt/jumpserver/data:ro
+    depends_on:
+      - jumpserver-app
+
+configs:
+  redis.conf:
+    file: ./redis/conf/redis.conf
+  
+
+volumes:
+  mysql_data_volume:
+  redis_data_volume:
+  jumpserver_logs_volume:
+  jumpserver_data_volume:
+
+networks:
+  jumpserver-network:
+    driver: overlay
+    attachable: true
