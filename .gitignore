@@ -30,5 +30,4 @@ Temporary Items
 certs/**
 certs
 logs/**
-secrets/*
-!secrets/.gitkeep
+secrets

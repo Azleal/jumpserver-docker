@@ -88,7 +88,9 @@ services:
     networks:
       jumpserver-network:
     environment:
-      - BOOTSTRAP_TOKEN=2GXCRnuIDOdStqblJA1k
+      BOOTSTRAP_TOKEN_FILE: /run/secrets/bootstrap_token
+    secrets:
+      - bootstrap_token
     depends_on:
       - jumpserver-app
 
