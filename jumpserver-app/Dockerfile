@@ -24,7 +24,7 @@ RUN echo nameserver 8.8.8.8 >> /etc/resolv.conf
 
 WORKDIR /opt
 
-RUN git clone --depth=1 https://github.com/jumpserver/jumpserver.git
+RUN git clone --depth 1 https://github.com/jumpserver/jumpserver.git
 
 WORKDIR /opt/jumpserver
 
