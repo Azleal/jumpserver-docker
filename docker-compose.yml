@@ -7,6 +7,7 @@ services:
       - MYSQL_DATABASE=jumpserver
       - MYSQL_USER_FILE=/run/secrets/mysql_user
       - MYSQL_PASSWORD_FILE=/run/secrets/mysql_password
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
     volumes:
       - "mysql_data_volume:/var/lib/mysql"
       - "./mysql/initdb.d:/docker-entrypoint-initdb.d"
@@ -18,14 +19,16 @@ services:
       - mysql_root_password
       - mysql_user
       - mysql_password
-#    deploy:
-#      placement:
-#        constraints:
-#          - node.labels.role==mysql
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.labels.mysql==true
 
   redis:
     image: redis:alpine
     volumes:
+#      - redis_conf:/usr/local/etc/redis/redis.conf
       - type: volume
         source: redis_data_volume
         target: /data
@@ -38,10 +41,11 @@ services:
    #   - /usr/local/etc/redis/redis.conf
       - --appendonly
       - "yes"
-#    deploy:
-#      placement:
-#        constraints:
-#          - node.labels.role==redis
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.labels.redis==true
 
 
   jumpserver-app:
@@ -66,6 +70,9 @@ services:
     depends_on:
       - redis
       - mysql
+    deploy:
+      mode: replicated
+      replicas: 2
 
   coco:
     build:
@@ -79,6 +86,9 @@ services:
       - bootstrap_token
     depends_on:
       - jumpserver-app
+    deploy:
+      mode: replicated
+      replicas: 1
 
   # 8081
   guacamole:
@@ -93,6 +103,9 @@ services:
       - bootstrap_token
     depends_on:
       - jumpserver-app
+    deploy:
+      mode: replicated
+      replicas: 1
 
   openresty:
     build:
@@ -110,7 +123,7 @@ services:
 
 
 configs:
-  redis.conf:
+  redis_conf:
     file: ./redis/conf/redis.conf
 
 secrets:
@@ -135,3 +148,4 @@ volumes:
 networks:
   jumpserver-network:
     driver: overlay
+    attachable: true

@@ -27,7 +27,7 @@ Temporary Items
 .apdisk
 *.log
 .idea
-certs/**
 certs
 logs/**
 secrets
+migration
