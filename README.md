@@ -9,9 +9,9 @@
 ├── README.md
 ├── backup.sh   # 获取secret, mysql的备份文件. redis需要手动获取.
 ├── docker-compose.yml 
-├── jumpserver-app  # (jumpserver-app)[https://github.com/jumpserver/jumpserver]
-├── jumpserver-coco # (jumpserver-coco)[https://github.com/jumpserver/coco]
-├── jumpserver-guacamole #(jumpserver-guacamole)[https://github.com/jumpserver/docker-guacamole]
+├── jumpserver-app  # [jumpserver-app](https://github.com/jumpserver/jumpserver)
+├── jumpserver-coco # [jumpserver-coco](https://github.com/jumpserver/coco)
+├── jumpserver-guacamole # [jumpserver-guacamole](https://github.com/jumpserver/docker-guacamole)
 ├── migration   # 用来迁移的文件夹,
 ├── mysql       # mysql service
 ├── openresty   # openresty service
