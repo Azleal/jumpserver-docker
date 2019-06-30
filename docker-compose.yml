@@ -1,12 +1,13 @@
-version: "3.7"
+version: '3.7'
 services:
   mysql:
     image: mysql:5.7
     environment:
-      - MYSQL_ROOT_PASSWORD=eptki3ZNwXuYwDmW6BRV
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/mysql_root_password
       - MYSQL_DATABASE=jumpserver
-      - MYSQL_USER=jumpserver
-      - MYSQL_PASSWORD=3YNZW4NixETC8pnxTLVh
+      - MYSQL_USER_FILE=/run/secrets/mysql_user
+      - MYSQL_PASSWORD_FILE=/run/secrets/mysql_password
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
     volumes:
       - "mysql_data_volume:/var/lib/mysql"
       - "./mysql/initdb.d:/docker-entrypoint-initdb.d"
@@ -14,18 +15,20 @@ services:
       jumpserver-network:
         aliases:
           - jumpserver-mysql
-#    deploy:
-#      placement:
-#        constraints:
-#          - node.labels.role==mysql
+    secrets:
+      - mysql_root_password
+      - mysql_user
+      - mysql_password
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.labels.mysql==true
 
   redis:
     image: redis:alpine
-    restart: unless-stopped
-    environment:
-      REDIS_PASSWORD: 7bngtJOVsmujANnK_@S
     volumes:
-      - ./redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
+#      - redis_conf:/usr/local/etc/redis/redis.conf
       - type: volume
         source: redis_data_volume
         target: /data
@@ -33,15 +36,16 @@ services:
       jumpserver-network:
         aliases:
           - jumpserver-redis
-    entrypoint: 
+    entrypoint:
       - redis-server
-      - /usr/local/etc/redis/redis.conf
+   #   - /usr/local/etc/redis/redis.conf
       - --appendonly
       - "yes"
-#    deploy:
-#      placement:
-#        constraints:
-#          - node.labels.role==redis
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.labels.redis==true
 
 
   jumpserver-app:
@@ -49,42 +53,59 @@ services:
       context: ./jumpserver-app
     image: azleal/jumpserver-app
     environment:
-      MYSQL_PASSWORD: 3YNZW4NixETC8pnxTLVh
-      REDIS_PASSWORD: 7bngtJOVsmujANnK_@S
-
+      BOOTSTRAP_TOKEN_FILE: /run/secrets/bootstrap_token
+      SECRET_KEY_FILE: /run/secrets/secret_key
+#      MYSQL_USER_FILE: /run/secrets/mysql_user
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
     volumes:
       - jumpserver_logs_volume:/opt/jumpserver/logs
       - jumpserver_data_volume:/opt/jumpserver/data
+    secrets:
+      - bootstrap_token
+      - secret_key
+      - mysql_user
+      - mysql_password
     networks:
       jumpserver-network:
     depends_on:
       - redis
       - mysql
-
+    deploy:
+      mode: replicated
+      replicas: 2
 
   coco:
     build:
       context: jumpserver-coco
-    image: azleal/jumpserver-coco
+    image: azleal/jumpserver-coco:1.4.10
     networks:
       jumpserver-network:
     environment:
-      - CORE_HOST=http://jumpserver-app:8080
-      - BOOTSTRAP_TOKEN=qzy4mzoY65spWXezG7A
+      BOOTSTRAP_TOKEN_FILE: /run/secrets/bootstrap_token
+    secrets:
+      - bootstrap_token
     depends_on:
       - jumpserver-app
+    deploy:
+      mode: replicated
+      replicas: 1
 
   # 8081
   guacamole:
-    image: jumpserver/jms_guacamole:1.4.10
+    build:
+      context: ./jumpserver-guacamole
+    image: azleal/jumpserver-guacamole:1.5.0
     networks:
       jumpserver-network:
     environment:
-      - JUMPSERVER_KEY_DIR=/config/guacamole/key
-      - JUMPSERVER_SERVER=http://jumpserver-app
-      - BOOTSTRAP_TOKEN=qzy4mzoY65spWXezG7A
+      BOOTSTRAP_TOKEN_FILE: /run/secrets/bootstrap_token
+    secrets:
+      - bootstrap_token
     depends_on:
       - jumpserver-app
+    deploy:
+      mode: replicated
+      replicas: 1
 
   openresty:
     build:
@@ -100,10 +121,23 @@ services:
     depends_on:
       - jumpserver-app
 
+
 configs:
-  redis.conf:
+  redis_conf:
     file: ./redis/conf/redis.conf
-  
+
+secrets:
+  bootstrap_token:
+    file: ./secrets/bootstrap_token
+  secret_key:
+    file: ./secrets/secret_key
+  mysql_root_password:
+    file: ./secrets/mysql_root_password
+  mysql_user:
+    file: ./secrets/mysql_user
+  mysql_password:
+    file: ./secrets/mysql_password
+
 
 volumes:
   mysql_data_volume:

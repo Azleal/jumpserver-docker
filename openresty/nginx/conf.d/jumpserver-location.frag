@@ -48,7 +48,7 @@ location /media/ {
         access_log off;
     }
   location /guacamole/ {
-        proxy_pass       http://172.17.0.1:8081 ;  #  guacamole
+        proxy_pass  http://guacamole:8081 ;  #  guacamole
         proxy_buffering off;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;

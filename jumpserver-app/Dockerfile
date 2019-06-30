@@ -1,6 +1,10 @@
 FROM registry.fit2cloud.com/public/python:v3
 MAINTAINER Azleal
 
+ENV MYSQL_HOST=mysql \
+    MYSQL_USER=jumpserver \
+    REDIS_HOST=redis
+
 #定义时区参数
 ENV TZ=Asia/Shanghai
 #设置时区
@@ -20,7 +24,7 @@ RUN echo nameserver 8.8.8.8 >> /etc/resolv.conf
 
 WORKDIR /opt
 
-RUN git clone -v https://github.com/jumpserver/jumpserver.git
+RUN git clone --depth=1 https://github.com/jumpserver/jumpserver.git
 
 WORKDIR /opt/jumpserver
 
@@ -30,6 +34,10 @@ RUN yum -y install epel-release nc
 
 WORKDIR /tmp/requirements
 
+RUN mkdir -p ~/.pip && echo [global] > ~/.pip/pip.conf \
+    && echo trusted-host =  mirrors.aliyun.com >> ~/.pip/pip.conf \
+    && echo index-url = https://mirrors.aliyun.com/pypi/simple >> ~/.pip/pip.conf
+
 RUN yum -y install $(cat rpm_requirements.txt)
 RUN pip install --upgrade pip setuptools && \
     pip install -r requirements.txt
@@ -37,8 +45,6 @@ RUN mkdir -p /root/.ssh/ && echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserK
 
 WORKDIR /opt/jumpserver
 
-COPY config.yml  /opt/jumpserver
-COPY SECRETS ~
 COPY entrypoint.sh /bin/entrypoint.sh
 
 VOLUME /opt/jumpserver/data

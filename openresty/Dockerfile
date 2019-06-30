@@ -12,9 +12,7 @@ ENV LC_ALL zh_CN.utf8
 RUN curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo \
     && yum clean all && yum makecache
 
-
 WORKDIR /root
-
 
 WORKDIR /usr/local/openresty/nginx
 COPY ./nginx/conf/nginx.conf ./conf/
