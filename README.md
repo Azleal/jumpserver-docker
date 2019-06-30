@@ -44,13 +44,13 @@
 
 ---
 #### 使用方法
-1. 新建系统
+##### 新建系统
     1. 执行`./run-jumpserver.sh`, 主要的步骤有:
         1. 生成secrets文件, 包括bootstrap_token,secret_key及数据库密码等.
         2. 构建image[可选,默认不构建,从dockerhub拉取]
         3. 运行服务
     2. 可重复执行
-2. 部分组件不是docker:
+部分组件不是docker: \
 比如mysql用的是rds, 那么需要在`docker-compose.yml`中注释mysql服务,并在`jumpserver-app`服务中增加环境变量以修改默认的mysql地址. redis同理.
     
 
@@ -83,3 +83,4 @@
 1. 恢复系统时,原系统和新系统的jumpserver-app版本需要一致,否则会出现新旧版本不兼容(缺表)导致运行异常. 后续会按照官方版本维护镜像.
 2. 添加`luna`插件
 3. 减小镜像体积
+4. 进一步完善脚本
