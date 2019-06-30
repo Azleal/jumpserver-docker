@@ -4,6 +4,7 @@
 > github项目: 点击[这里](https://github.com/jumpserver/jumpserver)
 
 ### 项目结构:
+```
 .
 ├── README.md
 ├── backup.sh   # 获取secret, mysql的备份文件. redis需要手动获取.
@@ -19,7 +20,7 @@
 ├── run-jumpserver.sh   # 运行服务 
 ├── secrets     # secret, token, mysql密码等 
 └── secrets-generator   #  secret, token, mysql密码等生成器
-
+```
 ---
 ### 使用说明:
 #### 环境要求:
