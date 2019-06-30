@@ -44,6 +44,13 @@
 
 ---
 #### 使用方法
+##### 快速启动
+1. `docker swarm init` 如果已经有swarm环境跳过此步
+2. `docker node ls`, 得到nodeID
+3. `docker node update --label-add mysql=true nodeID`
+4. `docker node update --label-add redis=true nodeID`
+5. `./run-jumpserver.sh` 初次启动时间较长可以在日志中查看启动进度，启动成功后访问 http://managerIP 即可。
+
 ##### 新建系统
     1. 执行`./run-jumpserver.sh`, 主要的步骤有:
         1. 生成secrets文件, 包括bootstrap_token,secret_key及数据库密码等.
