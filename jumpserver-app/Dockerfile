@@ -26,7 +26,9 @@ RUN echo nameserver 8.8.8.8 >> /etc/resolv.conf
 
 WORKDIR /opt
 
-RUN echo ${APP_VERSION} && git clone --depth=1 -b ${APP_VERSION} https://github.com/jumpserver/jumpserver.git
+RUN echo arg app version: ${APP_VERSION} && git clone https://github.com/jumpserver/jumpserver.git \
+    && cd jumpserver && [[ "${APP_VERSION}"=="master" ]] && checking out to ${APP_VERSION} \
+    && git checkout tags/${APP_VERSION} -b ${APP_VERSION}
 
 WORKDIR /opt/jumpserver
 
