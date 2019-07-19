@@ -1,8 +1,6 @@
 FROM registry.fit2cloud.com/public/python:v3
 MAINTAINER Azleal
 
-ARG APP_VERSION=master
-
 ENV MYSQL_HOST=mysql \
     MYSQL_USER=jumpserver \
     REDIS_HOST=redis
@@ -21,20 +19,24 @@ ENV LANG=zh_CN.UTF-8
 #RUN curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo \
 #    && yum clean all && yum makecache
 
-RUN useradd jumpserver && yum install -y git
+RUN useradd jumpserver && yum install -y git epel-release nc
 RUN echo nameserver 8.8.8.8 >> /etc/resolv.conf
 
 WORKDIR /opt
 
+#默认分支
+ARG APP_VERSION=master
+
 RUN echo arg app version: ${APP_VERSION} && git clone https://github.com/jumpserver/jumpserver.git \
-    && cd jumpserver && [[ "${APP_VERSION}"=="master" ]] && checking out to ${APP_VERSION} \
-    && git checkout tags/${APP_VERSION} -b ${APP_VERSION}
+    && cd jumpserver \
+    && if [[ "${APP_VERSION}" != "master" ]]; then \
+        echo checking out to ${APP_VERSION} \
+        && git checkout tags/${APP_VERSION} -b ${APP_VERSION}; \
+       fi
 
 WORKDIR /opt/jumpserver
 
 RUN cp -r ./requirements /tmp/requirements
-
-RUN yum -y install epel-release nc
 
 WORKDIR /tmp/requirements
 
