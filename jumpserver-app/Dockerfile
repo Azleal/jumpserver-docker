@@ -1,6 +1,8 @@
 FROM registry.fit2cloud.com/public/python:v3
 MAINTAINER Azleal
 
+ARG APP_VERSION=master
+
 ENV MYSQL_HOST=mysql \
     MYSQL_USER=jumpserver \
     REDIS_HOST=redis
@@ -24,7 +26,7 @@ RUN echo nameserver 8.8.8.8 >> /etc/resolv.conf
 
 WORKDIR /opt
 
-RUN git clone --depth=1 https://github.com/jumpserver/jumpserver.git
+RUN echo ${APP_VERSION} && git clone --depth=1 -b ${APP_VERSION} https://github.com/jumpserver/jumpserver.git
 
 WORKDIR /opt/jumpserver
 

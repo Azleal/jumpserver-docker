@@ -51,7 +51,9 @@ services:
   jumpserver-app:
     build:
       context: ./jumpserver-app
-    image: azleal/jumpserver-app
+      args:
+        APP_VERSION: 1.5.0
+    image: azleal/jumpserver-app:1.5.0
     environment:
       BOOTSTRAP_TOKEN_FILE: /run/secrets/bootstrap_token
       SECRET_KEY_FILE: /run/secrets/secret_key
